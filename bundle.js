@@ -32,15 +32,31 @@
         constructor(model2) {
           this.model = model2;
           this.mainContainerEl = document.querySelector("#main-container");
+          this.addNoteInput = document.querySelector("#note-input");
+          document.querySelector("#add-note-button").addEventListener("click", () => {
+            const newNote = document.querySelector("#note-input").value;
+            this.addNewNote(newNote);
+            this.addNoteInput.value = "";
+          });
         }
         displayNotes() {
+          document.querySelectorAll(".note").forEach((element) => {
+            element.remove();
+          });
           const notes = this.model.getNotes();
           notes.forEach((note) => {
-            const noteDiv = document.createElement("div");
-            noteDiv.textContent = note;
-            noteDiv.className = "note";
-            this.mainContainerEl.append(noteDiv);
+            const noteElement = document.createElement("div");
+            noteElement.textContent = note;
+            noteElement.className = "note";
+            this.mainContainerEl.append(noteElement);
           });
+        }
+        clearView() {
+          this.addNoteInput.value = "";
+        }
+        addNewNote(newNote) {
+          this.model.addNote(newNote);
+          this.displayNotes();
         }
       };
       module.exports = NotesView2;

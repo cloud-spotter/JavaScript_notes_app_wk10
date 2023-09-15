@@ -26,4 +26,33 @@ describe('Page notesView', () => {
         // Assert the page has been modified
         expect(document.querySelectorAll('div.note').length).toBe(2);
     });
-})
+
+    it(`inputs a new note title, clicks the button
+    and displays the new note`, () => {
+        // Arrange: establish model and view
+        const model = new NotesModel();
+        const view = new NotesView(model);
+        // set up constants for input & add note button elements
+        const inputElement = document.querySelector('#note-input');
+        const buttonElement = document.querySelector('#add-note-button');
+        // Act: take (set) user input & simulate 'add note' button click
+        inputElement.value = 'Test note';
+        buttonElement.click();
+        // Assert: note value appears on page
+        expect(document.querySelectorAll('div.note').length).toEqual(1);
+        expect(document.querySelectorAll('div.note')[0].textContent).toEqual('Test note');
+    });
+
+    it('clears previous notes before display new note', () => {
+        // Arrange: establish model and view
+        const model = new NotesModel();
+        const view = new NotesView(model);
+        // Act
+        model.addNote('One');
+        model.addNote('Two');
+        view.displayNotes();
+        view.displayNotes();
+        // Assert
+        expect(document.querySelectorAll('div.note').length).toEqual(2);
+    });
+});
