@@ -20,6 +20,9 @@
         reset() {
           this.items = [];
         }
+        setNotes(notes) {
+          this.items = notes;
+        }
       };
       module.exports = NotesModel2;
     }
@@ -29,8 +32,9 @@
   var require_notesView = __commonJS({
     "notesView.js"(exports, module) {
       var NotesView2 = class {
-        constructor(model2) {
+        constructor(model2, client2) {
           this.model = model2;
+          this.client = client2;
           this.mainContainerEl = document.querySelector("#main-container");
           this.addNoteInput = document.querySelector("#note-input");
           document.querySelector("#add-note-button").addEventListener("click", () => {
@@ -51,26 +55,48 @@
             this.mainContainerEl.append(noteElement);
           });
         }
-        clearView() {
-          this.addNoteInput.value = "";
-        }
+        // Not actually used/implemented:
+        // clearView() {
+        //     this.addNoteInput.value = ""; 
+        // }           
         addNewNote(newNote) {
           this.model.addNote(newNote);
           this.displayNotes();
+        }
+        // Fetch notes from API and update view by displaying them
+        async displayNotesFromApi() {
+          await this.client.loadNotes((notes) => {
+            this.model.setNotes(notes);
+            this.displayNotes();
+          });
         }
       };
       module.exports = NotesView2;
     }
   });
 
+  // notesClient.js
+  var require_notesClient = __commonJS({
+    "notesClient.js"(exports, module) {
+      var NotesClient2 = class {
+        loadNotes(callback) {
+          fetch("http://localhost:3000/notes").then((response) => response.json()).then((data) => {
+            callback(data);
+          });
+        }
+      };
+      module.exports = NotesClient2;
+    }
+  });
+
   // index.js
+  console.log("The notes app is running");
   var NotesModel = require_notesModel();
   var NotesView = require_notesView();
+  var NotesClient = require_notesClient();
+  var client = new NotesClient();
   var model = new NotesModel();
-  var view = new NotesView(model);
-  console.log("The notes app is running");
-  console.log(model.getNotes());
-  model.addNote("This is an example note");
-  model.addNote("Here's another note!");
-  view.displayNotes();
+  var view = new NotesView(model, client);
+  view.displayNotesFromApi();
+  console.log("The notes app is working!");
 })();

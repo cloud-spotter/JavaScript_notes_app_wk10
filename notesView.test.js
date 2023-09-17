@@ -5,15 +5,19 @@
 const fs = require('fs');
 const NotesView = require('./notesView');
 const NotesModel = require('./notesModel');
+const NotesClient = require('./notesClient');
 
-describe('Page notesView', () => {
-    beforeEach(() => {
-        /* Establish DOM structure for tests and initialise
-        HTML document body to mirror actual HTML file, to
-        behave as if interacting with actual HTML page */
-        document.body.innerHTML = fs.readFileSync('./index.html');
-    });
+jest.mock('./NotesClient'); // Mock the NotesClient module
 
+beforeEach(() => {
+    /* Establish DOM structure for tests and initialise
+    HTML document body to mirror actual HTML file, to
+    behave as if interacting with actual HTML page */
+    document.body.innerHTML = fs.readFileSync('./index.html');
+    jest.clearAllMocks(); // Clear all mocks
+});
+
+describe('NotesView', () => {
     it('displays a list of notes, each in their own div element', () => {
         // Establish model and view
         const model = new NotesModel();
@@ -56,3 +60,45 @@ describe('Page notesView', () => {
         expect(document.querySelectorAll('div.note').length).toEqual(2);
     });
 });
+
+describe('displayNotesFromAPI', () => {
+    let model, client, view; // Declare here outside beforeEach but inside test suite
+    
+    // Arrange (now with mock client dependecy injection too)
+    beforeEach(() => {
+        // Arrange: initialise model, view & client
+        model = new NotesModel();
+        client = new NotesClient(); 
+        view = new NotesView(model, client); // Inject the mocked NotesClient
+        NotesClient.mockClear()
+    });
+    
+    it(`fetches the notes list from the client, 
+    sets the notes list on the model
+    and displays the notes list on the page`, async () => {
+        
+        /* Arrange: set up fake notes and 
+        mock the client's loadNotes method to use them */
+        const fakeNotes = ['fakenote1', 'fakenote2', 'fakenote3'];
+        client.loadNotes.mockImplementationOnce(callback => {
+            callback(fakeNotes);
+        });
+        // Act: fetch notes from API and update the view
+        await view.displayNotesFromApi();
+
+        // Assert: client.loadNotes was called
+        expect(client.loadNotes).toHaveBeenCalled();
+
+        // Assert: model now has the fake notes
+        const addedNotes = model.getNotes(); // Act
+        expect(addedNotes).toEqual(fakeNotes); // Assert
+
+        // Assert: notes are displayed in the DOM
+        expect(document.querySelectorAll('div.note').length).toEqual(fakeNotes.length);
+        fakeNotes.forEach((note, index) => {
+            expect(document.querySelectorAll('div.note')[index].textContent).toEqual(note);
+        })
+    });
+});
+
+

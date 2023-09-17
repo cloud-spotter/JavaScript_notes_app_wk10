@@ -1,9 +1,11 @@
 class NotesView {
-    constructor(model) {
+    constructor(model, client) {
         this.model = model;
+        this.client = client;
         this.mainContainerEl = document.querySelector('#main-container');
         this.addNoteInput = document.querySelector('#note-input');
-        // add event listener for new add note button (event: click)
+        
+        // Add event listener for new add note button (event: click)
         document.querySelector('#add-note-button').addEventListener('click', () => {
             const newNote = document.querySelector('#note-input').value;
             this.addNewNote(newNote);
@@ -29,15 +31,23 @@ class NotesView {
             })
         }
     
-    clearView() {
-        // Remember, this is just clearing the web browser view, not your actual data
-        this.addNoteInput.value = ""; 
-    }
+    // Not actually used/implemented:
+    // clearView() {
+    //     this.addNoteInput.value = ""; 
+    // }           
 
     addNewNote(newNote) {
         //this.clearView();
         this.model.addNote(newNote);
         this.displayNotes();
+    }
+    
+    // Fetch notes from API and update view by displaying them
+    async displayNotesFromApi() {
+        await this.client.loadNotes((notes) => {
+            this.model.setNotes(notes);
+            this.displayNotes();
+        });
     }
 }
 

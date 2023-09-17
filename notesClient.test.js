@@ -5,7 +5,7 @@ const NotesClient = require('./notesClient');
 // available within the browser)
 require('jest-fetch-mock').enableMocks()
 
-describe('Client class', () => {
+describe('NotesClient class', () => {
   it('calls fetch and loads data', (done) => {
     // 1. Instantiate the class
     const client = new NotesClient();
